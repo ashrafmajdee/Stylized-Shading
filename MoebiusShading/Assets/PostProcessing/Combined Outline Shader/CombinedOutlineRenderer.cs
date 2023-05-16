@@ -15,6 +15,13 @@ public class CombinedOutlineRenderer : PostProcessEffectRenderer<CombinedOutline
         sheet.properties.SetFloat("_NormalSlope", settings.normalSlope);
         sheet.properties.SetColor("_OutlineColor", settings.outlineColor);
         sheet.properties.SetColor("_Color", settings.color);
+        
+        sheet.properties.SetTexture("_Noise",settings.noise);
+        sheet.properties.SetFloat("_ShadowThreshold",settings.shadowThreshold);
+        sheet.properties.SetFloat("_NoiseStrength",settings.noiseStrength);
+        sheet.properties.SetFloat("_HatchingThickness", settings.hatchingThickness);
+        sheet.properties.SetFloat("_NumHatchingLines",settings.numHatchingLines);
+        
 
         context.command.BlitFullscreenTriangle(context.source, context.destination, sheet, 0);       
     }

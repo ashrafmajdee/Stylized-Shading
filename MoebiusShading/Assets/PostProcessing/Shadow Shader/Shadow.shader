@@ -34,7 +34,7 @@ Shader "PostProcessing/Shadow"
             if(depth > 0)
             {
                 hatch = (1 - step(_Threshold,shadow)) * hatch;
-                 color = lerp(_ObjectColor,_ShadowColor,hatch);
+                color = lerp(_ObjectColor,_ShadowColor,hatch);
             }
             return color;
         }            

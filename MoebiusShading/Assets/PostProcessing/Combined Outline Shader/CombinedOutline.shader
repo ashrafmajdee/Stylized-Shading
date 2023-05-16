@@ -3,9 +3,12 @@ Shader "PostProcessing/CombinedOutline"
     HLSLINCLUDE
         #include "Packages/com.unity.postprocessing/PostProcessing/Shaders/StdLib.hlsl"
 
+        TEXTURE2D_SAMPLER2D(_Noise, sampler_Noise);
+    
         TEXTURE2D_SAMPLER2D(_MainTex, sampler_MainTex);
         TEXTURE2D_SAMPLER2D(_CameraDepthTexture, sampler_CameraDepthTexture);
         TEXTURE2D_SAMPLER2D(_CameraGBufferTexture2, sampler_CameraGBufferTexture2);
+        TEXTURE2D_SAMPLER2D(_CameraGBufferTexture3, sampler_CameraGBufferTexture3);
 
         float4x4 UNITY_MATRIX_MVP;
         float4x4 _ViewProjectInverse;
@@ -14,7 +17,17 @@ Shader "PostProcessing/CombinedOutline"
         float _DepthThreshold;
         float4 _OutlineColor;
         float4 _Color;
+    
+        float _HatchingThickness;
+        float _NumHatchingLines;
+        float _NoiseStrength;
+        float _ShadowThreshold;
 
+        float DoubleStep(float a, float b, float x)
+        {
+            return 1 - (step(a, x) * (1-step(b, x)));
+        }
+    
         float SobelSampleDepth(Texture2D t, SamplerState s, float2 uv, float3 offset)
         {
             float pixelCenter = LinearEyeDepth(t.Sample(s, uv).r);
@@ -75,7 +88,7 @@ Shader "PostProcessing/CombinedOutline"
 
             o.cameraDir = cameraLocalDir.xyz / length(cameraForwardDir.xyz);
 
-
+            
 
             return o;
         }
@@ -83,7 +96,7 @@ Shader "PostProcessing/CombinedOutline"
         float4 FragMain(FragInput i) : SV_Target
         {
             float3 offset = float3((1.0 / _ScreenParams.x), (1.0 / _ScreenParams.y), 0.0);
-            float3 sceneColor  = SAMPLE_TEXTURE2D(_MainTex, sampler_CameraDepthTexture, i.texcoord);
+            float3 sceneColor  = _Color;
             float sceneDepth = SAMPLE_TEXTURE2D(_CameraDepthTexture, sampler_CameraDepthTexture, i.texcoord).r;
             float3 sceneNormal = SAMPLE_TEXTURE2D(_CameraGBufferTexture2, sampler_CameraGBufferTexture2, i.texcoord).xyz * 2.0 - 1.0;
 
@@ -106,6 +119,17 @@ Shader "PostProcessing/CombinedOutline"
 
             edge = saturate(max(sobelDepth,edge));
 
+            // hatching
+            float shadow = _CameraGBufferTexture3.Sample(sampler_CameraGBufferTexture3,i.texcoord).r;
+            float halfWidth = _HatchingThickness/2;
+            float noiseCoord =  i.cameraDir.y + (_Noise.Sample(sampler_Noise,i.texcoord).r - 0.5) * _NoiseStrength;
+            float hatch = DoubleStep(halfWidth,1-halfWidth,frac(noiseCoord*_NumHatchingLines));
+            if(sceneDepth > 0)
+            {
+                hatch = (1 - step(_ShadowThreshold,shadow)) * hatch;
+                edge = saturate(max(hatch, edge));
+            }
+            
             float3 color = lerp(sceneColor, _OutlineColor, edge);
             return float4(color,1);
         }
