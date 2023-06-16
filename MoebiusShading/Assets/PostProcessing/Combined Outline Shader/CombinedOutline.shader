@@ -122,7 +122,7 @@ Shader "PostProcessing/CombinedOutline"
             // hatching
             float shadow = _CameraGBufferTexture3.Sample(sampler_CameraGBufferTexture3,i.texcoord).r;
             float halfWidth = _HatchingThickness/2;
-            float noiseCoord =  i.cameraDir.y + (_Noise.Sample(sampler_Noise,i.texcoord).r - 0.5) * _NoiseStrength;
+            float noiseCoord =  i.texcoord.y + (_Noise.Sample(sampler_Noise,i.texcoord).y - 0.5) * _NoiseStrength;
             float hatch = DoubleStep(halfWidth,1-halfWidth,frac(noiseCoord*_NumHatchingLines));
             if(sceneDepth > 0)
             {
