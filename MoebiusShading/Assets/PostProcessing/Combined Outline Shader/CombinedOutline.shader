@@ -17,10 +17,8 @@ Shader "PostProcessing/CombinedOutline"
         float _DepthThreshold;
         float4 _OutlineColor;
         float4 _Color;
-    
-        float _HatchingThickness;
-        float _NumHatchingLines;
-        float _NoiseStrength;
+
+        float _HatchThreshold;
         float _ShadowThreshold;
 
         float DoubleStep(float a, float b, float x)
@@ -120,10 +118,9 @@ Shader "PostProcessing/CombinedOutline"
             edge = saturate(max(sobelDepth,edge));
 
             // hatching
-            float shadow = _CameraGBufferTexture3.Sample(sampler_CameraGBufferTexture3,i.texcoord).r;
-            float halfWidth = _HatchingThickness/2;
-            float noiseCoord =  i.texcoord.y + (_Noise.Sample(sampler_Noise,i.texcoord).y - 0.5) * _NoiseStrength;
-            float hatch = DoubleStep(halfWidth,1-halfWidth,frac(noiseCoord*_NumHatchingLines));
+            float3 baseColor = _CameraGBufferTexture3.Sample(sampler_CameraGBufferTexture3,i.texcoord);
+            float shadow = baseColor.b;
+            float hatch = 1-saturate(baseColor.r) > _HatchThreshold;
             if(sceneDepth > 0)
             {
                 hatch = (1 - step(_ShadowThreshold,shadow)) * hatch;
