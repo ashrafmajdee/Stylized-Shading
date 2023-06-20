@@ -129,7 +129,8 @@ Shader "PostProcessing/CombinedOutline"
             float3 offset = float3((1.0 / _ScreenParams.x), (1.0 / _ScreenParams.y), 0.0);
             float3 sceneColor  = SAMPLE_TEXTURE2D(_CameraGBufferTexture0, sampler_CameraGBufferTexture0, i.texcoord);
             float sceneDepth = SAMPLE_TEXTURE2D(_CameraDepthTexture, sampler_CameraDepthTexture, i.texcoord).r;
-            float3 sceneNormal = SAMPLE_TEXTURE2D(_CameraGBufferTexture2, sampler_CameraGBufferTexture2, i.texcoord).xyz * 2.0 - 1.0;
+            float4 normalTexture = SAMPLE_TEXTURE2D(_CameraGBufferTexture2, sampler_CameraGBufferTexture2, i.texcoord);
+            float3 sceneNormal = normalTexture.xyz * 2.0 - 1.0;
             
 
             float depthThreshold = _DepthThreshold / sceneDepth;
@@ -156,6 +157,8 @@ Shader "PostProcessing/CombinedOutline"
             edge = saturate(max(sobelDepth,edge));
 
             // hatching and shadows
+            /*
+             
             // hatching is triplanar mapped
             // get triplanar uv for hatching texture
             float linearDepth = LinearEyeDepth(sceneDepth);
@@ -165,9 +168,16 @@ Shader "PostProcessing/CombinedOutline"
             float hatchingY = SAMPLE_TEXTURE2D(_Hatching,sampler_Hatching,triUV.yPlane * _HatchingScale).g;
             float hatchingZ = SAMPLE_TEXTURE2D(_Hatching,sampler_Hatching,triUV.zPlane * _HatchingScale).b;
 
+            //triplanar hatching
             float3 triW = GetTriplanarWeights(sceneNormal);
             float hatching = hatchingX * triW.x + hatchingY * triW.y + hatchingZ * triW.z;
             hatching = step(0.5,hatching);
+
+            */
+
+            //object space hatching
+
+            float hatching = normalTexture.a;
             
             float3 baseColor = _CameraGBufferTexture3.Sample(sampler_CameraGBufferTexture3,i.texcoord);
             float3 shadowColors = baseColor.rgb / sceneColor.rgb;

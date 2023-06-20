@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: GameObject Profile
   m_EditorClassIdentifier: 
   settings:
-  - {fileID: 7570085244017884832}
---- !u!114 &7570085244017884832
+  - {fileID: 7985039804068006769}
+--- !u!114 &7985039804068006769
 MonoBehaviour:
   m_ObjectHideFlags: 3
   m_CorrespondingSourceObject: {fileID: 0}
@@ -32,19 +32,19 @@ MonoBehaviour:
     value: 1
   thickness:
     overrideState: 1
-    value: 0.84
+    value: 0.81
   normalSlope:
     overrideState: 1
-    value: 0.57
+    value: 0.55
   depthThreshold:
     overrideState: 1
-    value: 0.01
+    value: 0.03
   outlineColor:
     overrideState: 1
     value: {r: 0, g: 0, b: 0, a: 1}
   color:
     overrideState: 1
-    value: {r: 0.53640085, g: 0.6367318, b: 0.7735849, a: 1}
+    value: {r: 0.49749595, g: 0.4669811, b: 1, a: 1}
   noise:
     overrideState: 1
     value: {fileID: 2800000, guid: e97efb8430f68dd4495140f7948894ec, type: 3}
@@ -55,7 +55,7 @@ MonoBehaviour:
     defaultState: 1
   hatchingScale:
     overrideState: 1
-    value: 0.18
+    value: 0.76
   shadowThreshold:
     overrideState: 1
-    value: 0.66
+    value: 0.33

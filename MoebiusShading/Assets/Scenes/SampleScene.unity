@@ -254,7 +254,7 @@ PrefabInstance:
     - target: {fileID: -8459693057056122977, guid: bf87a1c7b31577b40841e94b08538018, type: 3}
       propertyPath: m_Materials.Array.data[0]
       value: 
-      objectReference: {fileID: 2100000, guid: e296fe2bc0726ad4d95d71e5bd8569a6, type: 2}
+      objectReference: {fileID: 2100000, guid: dfdc2a4455e6c574fb250da99425819a, type: 2}
     - target: {fileID: 919132149155446097, guid: bf87a1c7b31577b40841e94b08538018, type: 3}
       propertyPath: m_Name
       value: Richier01
@@ -567,7 +567,7 @@ PrefabInstance:
     - target: {fileID: -7511558181221131132, guid: 075c9b3ea77ed4a4b9254494ada49f30, type: 3}
       propertyPath: m_Materials.Array.data[0]
       value: 
-      objectReference: {fileID: 2100000, guid: ba5d12df7820d6e47b7aa18e592306f8, type: 2}
+      objectReference: {fileID: 2100000, guid: 6b5552a8e8b9b7f4b8222758636450af, type: 2}
     - target: {fileID: 919132149155446097, guid: 075c9b3ea77ed4a4b9254494ada49f30, type: 3}
       propertyPath: m_Name
       value: commedia
@@ -771,7 +771,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1044554988}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 2.2, y: 0.334, z: -38.13}
+  m_LocalPosition: {x: 2.2, y: -1.31, z: -39.51}
   m_LocalScale: {x: 0.6, y: 0.6, z: 0.6}
   m_ConstrainProportionsScale: 1
   m_Children:
@@ -832,7 +832,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 211d2f7deab1ae149a6bd82dd4c3bcbe, type: 2}
+  - {fileID: 2100000, guid: 9fbc9cbe72fd89e4dbb73746dc47e23e, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -929,7 +929,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 889599b7d1f5c2c458017e73a2240f67, type: 2}
+  - {fileID: 2100000, guid: adc8993272fb4034d95e35db3a158e0a, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0

@@ -52,18 +52,18 @@ Shader "PostProcessing/SobelOutline"
         float4 FragMain(VaryingsDefault i) : SV_Target
         {
             float depth = _CameraDepthTexture.Sample(sampler_CameraDepthTexture,i.texcoord.xy).r;
-            float4 sceneColor = _MainTex.Sample(sampler_MainTex,i.texcoord.xy);
-            /*float3 sceneColor = float3(1,1,1);
+            /*float4 sceneColor = _MainTex.Sample(sampler_MainTex,i.texcoord.xy)*/;
+            float3 sceneColor = float3(1,1,1);
             if(depth <= 0)
             {
                 sceneColor = float3(0.2,0.2,0.8);
-            }*/
+            }
             
             float3 outlineColor = lerp(sceneColor, _OutlineColor.rgb, _OutlineColor.a);
             float3 offset = float3((1.0 / _ScreenParams.x), (1.0 / _ScreenParams.y), 0.0) * _OutlineThickness;
             
             float sobelDepth = SobelSampleDepth(_CameraDepthTexture, sampler_CameraDepthTexture, i.texcoord.xy, offset).r;
-            sobelDepth = step(_DepthThreshold,sobelDepth);
+            sobelDepth = step(_DepthThreshold/depth,sobelDepth);
 
             float3 sobelNormalVec = SobelSample(_CameraGBufferTexture2, sampler_CameraGBufferTexture2, i.texcoord.xy, offset);
             float sobelNormal = length(sobelNormalVec);
