@@ -19,7 +19,7 @@ public class CombinedOutlineSettings : PostProcessEffectSettings
     public ColorParameter color = new ColorParameter { value = Color.white }; 
     
     public TextureParameter noise = new TextureParameter ();
-    [Range(0,1)]
-    public FloatParameter hatchingThreshold = new FloatParameter { value = 0.5f };
+    public TextureParameter hatching = new TextureParameter ();
+    public FloatParameter hatchingScale = new FloatParameter { value = 0.5f };
     public FloatParameter shadowThreshold = new FloatParameter { value = 0.5f };
 }

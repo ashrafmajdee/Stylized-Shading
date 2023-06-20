@@ -4,9 +4,11 @@ Shader "PostProcessing/CombinedOutline"
         #include "Packages/com.unity.postprocessing/PostProcessing/Shaders/StdLib.hlsl"
 
         TEXTURE2D_SAMPLER2D(_Noise, sampler_Noise);
+        TEXTURE2D_SAMPLER2D(_Hatching, sampler_Hatching);
     
         TEXTURE2D_SAMPLER2D(_MainTex, sampler_MainTex);
         TEXTURE2D_SAMPLER2D(_CameraDepthTexture, sampler_CameraDepthTexture);
+        TEXTURE2D_SAMPLER2D(_CameraGBufferTexture0, sampler_CameraGBufferTexture0);
         TEXTURE2D_SAMPLER2D(_CameraGBufferTexture2, sampler_CameraGBufferTexture2);
         TEXTURE2D_SAMPLER2D(_CameraGBufferTexture3, sampler_CameraGBufferTexture3);
 
@@ -18,8 +20,39 @@ Shader "PostProcessing/CombinedOutline"
         float4 _OutlineColor;
         float4 _Color;
 
-        float _HatchThreshold;
+        float _HatchingScale;
         float _ShadowThreshold;
+
+        struct TriplanarUV
+        {
+            float2 xPlane, yPlane, zPlane;
+        };
+
+        TriplanarUV GetTriplanarUV (float3 worldPos, float3 normal)
+        {
+            TriplanarUV triUV;
+            triUV.xPlane = worldPos.zy;
+            triUV.yPlane = worldPos.xz;
+            triUV.zPlane = worldPos.xy;
+            if (normal.x < 0) {
+		        triUV.xPlane.x = -triUV.xPlane.x;
+	        }
+	        if (normal.y < 0) {
+		        triUV.yPlane.x = -triUV.yPlane.x;
+	        }
+	        if (normal.z >= 0) {
+		        triUV.zPlane.x = -triUV.zPlane.x;
+	        }
+            return triUV;
+        }
+
+        float3 GetTriplanarWeights (float3 normal)
+        {
+            float3 triW = abs(normal);
+            triW /= (triW.x + triW.y + triW.z);
+            return triW;
+        }
+    
 
         float DoubleStep(float a, float b, float x)
         {
@@ -94,9 +127,10 @@ Shader "PostProcessing/CombinedOutline"
         float4 FragMain(FragInput i) : SV_Target
         {
             float3 offset = float3((1.0 / _ScreenParams.x), (1.0 / _ScreenParams.y), 0.0);
-            float3 sceneColor  = _Color;
+            float3 sceneColor  = SAMPLE_TEXTURE2D(_CameraGBufferTexture0, sampler_CameraGBufferTexture0, i.texcoord);
             float sceneDepth = SAMPLE_TEXTURE2D(_CameraDepthTexture, sampler_CameraDepthTexture, i.texcoord).r;
             float3 sceneNormal = SAMPLE_TEXTURE2D(_CameraGBufferTexture2, sampler_CameraGBufferTexture2, i.texcoord).xyz * 2.0 - 1.0;
+            
 
             float depthThreshold = _DepthThreshold / sceneDepth;
             float edge = 0;
@@ -111,20 +145,37 @@ Shader "PostProcessing/CombinedOutline"
                     edge = 1;
                 }
             }
+            else
+            {
+                sceneColor = _Color;
+            }
 
             float sobelDepth = SobelSampleDepth(_CameraDepthTexture, sampler_CameraDepthTexture, i.texcoord.xy, offset).r;
             sobelDepth = step(depthThreshold,sobelDepth);
 
             edge = saturate(max(sobelDepth,edge));
 
-            // hatching
+            // hatching and shadows
+            // hatching is triplanar mapped
+            // get triplanar uv for hatching texture
+            float linearDepth = LinearEyeDepth(sceneDepth);
+            float3 worldPos = (i.cameraDir * linearDepth) + _WorldSpaceCameraPos;
+            TriplanarUV triUV = GetTriplanarUV(worldPos,sceneNormal);;
+            float hatchingX = SAMPLE_TEXTURE2D(_Hatching,sampler_Hatching,triUV.xPlane * _HatchingScale).r;
+            float hatchingY = SAMPLE_TEXTURE2D(_Hatching,sampler_Hatching,triUV.yPlane * _HatchingScale).g;
+            float hatchingZ = SAMPLE_TEXTURE2D(_Hatching,sampler_Hatching,triUV.zPlane * _HatchingScale).b;
+
+            float3 triW = GetTriplanarWeights(sceneNormal);
+            float hatching = hatchingX * triW.x + hatchingY * triW.y + hatchingZ * triW.z;
+            hatching = step(0.5,hatching);
+            
             float3 baseColor = _CameraGBufferTexture3.Sample(sampler_CameraGBufferTexture3,i.texcoord);
-            float shadow = baseColor.b;
-            float hatch = 1-saturate(baseColor.r) > _HatchThreshold;
+            float3 shadowColors = baseColor.rgb / sceneColor.rgb;
+            float shadow = min(shadowColors.r,min(shadowColors.g,shadowColors.b));
             if(sceneDepth > 0)
             {
-                hatch = (1 - step(_ShadowThreshold,shadow)) * hatch;
-                edge = saturate(max(hatch, edge));
+                shadow = (1 - step(_ShadowThreshold,shadow));
+                edge = saturate(max(edge, (1-hatching)*shadow));
             }
             
             float3 color = lerp(sceneColor, _OutlineColor, edge);
