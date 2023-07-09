@@ -1,6 +1,6 @@
 // Unity built-in shader source. Copyright (c) 2016 Unity Technologies. MIT license (see license.txt)
 
-Shader "Custom/StandardShaderWithHatching"
+Shader "Custom/TriplanarStandardHatching"
 {
     Properties
     {
@@ -52,7 +52,35 @@ Shader "Custom/StandardShaderWithHatching"
     CGINCLUDE
         #define UNITY_SETUP_BRDF_INPUT MetallicSetup
 
-    
+        struct TriplanarUV
+        {
+            float2 xPlane, yPlane, zPlane;
+        };
+
+        TriplanarUV GetTriplanarUV (float3 worldPos, float3 normal)
+        {
+            TriplanarUV triUV;
+            triUV.xPlane = worldPos.zy;
+            triUV.yPlane = worldPos.xz;
+            triUV.zPlane = worldPos.xy;
+            if (normal.x < 0) {
+		        triUV.xPlane.x = -triUV.xPlane.x;
+	        }
+	        if (normal.y < 0) {
+		        triUV.yPlane.x = -triUV.yPlane.x;
+	        }
+	        if (normal.z >= 0) {
+		        triUV.zPlane.x = -triUV.zPlane.x;
+	        }
+            return triUV;
+        }
+
+        float3 GetTriplanarWeights (float3 normal)
+        {
+            float3 triW = abs(normal);
+            triW /= (triW.x + triW.y + triW.z);
+            return triW;
+        }
     ENDCG
 
     SubShader
@@ -264,9 +292,19 @@ Shader "Custom/StandardShaderWithHatching"
 
                 
                 UnityStandardDataToGbuffer(data, outGBuffer0, outGBuffer1, outGBuffer2);
-                float2 uv = float2((i.tex.x + _Hatching_ST.z) * _Hatching_ST.x,(i.tex.y + _Hatching_ST.w) * _Hatching_ST.y);
-                float hatching = tex2D(_Hatching, uv).r;
-                outGBuffer2.a = step(0.6,hatching);
+                //Put hatching into alpha channel
+                TriplanarUV triUV = GetTriplanarUV(s.posWorld,s.normalWorld);
+                float scale = 0.3;
+                float hatchingX = tex2D(_Hatching,triUV.xPlane * scale).r;
+                float hatchingY = tex2D(_Hatching,triUV.yPlane * scale).g;
+                float hatchingZ = tex2D(_Hatching,triUV.zPlane * scale).b;
+
+                float3 triW = GetTriplanarWeights(s.normalWorld);
+                float hatching = hatchingX * triW.x + hatchingY * triW.y + hatchingZ * triW.z;
+                hatching = step(0.6,hatching);
+                outGBuffer2.a = hatching;
+                
+                
 
                 // Emissive lighting buffer
                 outEmission = half4(emissiveColor, 1);
