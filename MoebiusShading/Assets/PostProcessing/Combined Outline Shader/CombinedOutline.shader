@@ -235,7 +235,7 @@ Shader "PostProcessing/CombinedOutline"
                 edge = saturate(max(edge,shadowEdge));
                 if(shadow)
                 {
-                    sceneColor *= 0.5f;
+                    sceneColor *= 0.5;
                 }
             }
             
