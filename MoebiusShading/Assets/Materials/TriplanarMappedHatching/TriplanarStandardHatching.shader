@@ -273,7 +273,7 @@ Shader "Custom/TriplanarStandardHatching"
 
                 UnityGI gi = FragmentGI (s, occlusion, i.ambientOrLightmapUV, atten, dummyLight, sampleReflectionsInDeferred);
 
-                half3 emissiveColor = half3(0,0,0);
+                half3 emissiveColor = UNITY_BRDF_PBS (s.diffColor, s.specColor, s.oneMinusReflectivity, s.smoothness, s.normalWorld, -s.eyeVec, gi.light, gi.indirect).rgb;
 
                 #ifdef _EMISSION
                     emissiveColor += Emission (i.tex.xy);
@@ -302,7 +302,7 @@ Shader "Custom/TriplanarStandardHatching"
                 float3 triW = GetTriplanarWeights(s.normalWorld);
                 float hatching = hatchingX * triW.x + hatchingY * triW.y + hatchingZ * triW.z;
                 hatching = step(0.6,hatching);
-                outGBuffer2.a = hatching;
+                outGBuffer2 = float4(data.normalWorld,hatching);
                 
                 
 

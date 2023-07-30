@@ -35,27 +35,16 @@ MonoBehaviour:
     value: 0.75
   normalSlope:
     overrideState: 1
-    value: 0.47
+    value: 0.626
   depthThreshold:
     overrideState: 1
-    value: 0.07
+    value: 0.06
   outlineColor:
     overrideState: 1
     value: {r: 0, g: 0, b: 0, a: 1}
   color:
     overrideState: 1
     value: {r: 0.49749595, g: 0.4669811, b: 1, a: 1}
-  noise:
-    overrideState: 1
-    value: {fileID: 2800000, guid: e97efb8430f68dd4495140f7948894ec, type: 3}
-    defaultState: 1
-  hatching:
-    overrideState: 1
-    value: {fileID: 2800000, guid: 651a2bb144fd98644b7030747b0d1410, type: 3}
-    defaultState: 1
-  hatchingScale:
-    overrideState: 1
-    value: 0.76
   shadowThreshold:
     overrideState: 1
-    value: 0.23
+    value: 0.69

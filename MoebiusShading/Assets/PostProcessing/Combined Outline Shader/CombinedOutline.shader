@@ -109,13 +109,12 @@ Shader "PostProcessing/CombinedOutline"
 
         float CalculateShadow(float2 uv)
         {
-            float3 baseColor = _CameraGBufferTexture3.Sample(sampler_CameraGBufferTexture3,uv);
+            float3 shadedColor = _CameraGBufferTexture3.Sample(sampler_CameraGBufferTexture3,uv);
             float3 sceneColor = _CameraGBufferTexture0.Sample(sampler_CameraGBufferTexture0,uv);
-            float3 shadowColors = baseColor.rgb / sceneColor.rgb;
-           
+            float3 shadowColors = shadedColor.rgb / sceneColor.rgb;
+            
             float shadow = min(shadowColors.r,min(shadowColors.g,shadowColors.b));
-            shadow = (1 - step(_ShadowThreshold,shadow));
-            return shadow;
+            return shadow < _ShadowThreshold;
         }
 
         float4 SobelSampleShadow(float2 uv, float3 offset)
@@ -125,6 +124,28 @@ Shader "PostProcessing/CombinedOutline"
             float pixelRight  = CalculateShadow(uv + offset.xz);
             float pixelUp     = CalculateShadow(uv - offset.zy);
             float pixelDown   = CalculateShadow(uv + offset.zy);
+            
+            return abs(pixelLeft  - pixelCenter) +
+                   abs(pixelRight - pixelCenter) +
+                   abs(pixelUp    - pixelCenter) +
+                   abs(pixelDown  - pixelCenter);
+        }
+
+        float sampleSilhouette(float2 uv, float3 cameraDir)
+        {
+            float3 sceneNormal = _CameraGBufferTexture2.Sample(sampler_CameraGBufferTexture2,uv);
+            float3 toCameraDir = normalize(-cameraDir);
+            float silhouette = dot(toCameraDir, normalize(sceneNormal));
+            return silhouette;
+        }
+
+        float sobelSampleSilhouette(float2 uv, float3 cameraDir, float3 offset)
+        {
+            float pixelCenter = sampleSilhouette(uv, cameraDir);
+            float pixelLeft   = sampleSilhouette(uv - offset.xz, cameraDir);
+            float pixelRight  = sampleSilhouette(uv + offset.xz, cameraDir);
+            float pixelUp     = sampleSilhouette(uv - offset.zy, cameraDir);
+            float pixelDown   = sampleSilhouette(uv + offset.zy, cameraDir);
             
             return abs(pixelLeft  - pixelCenter) +
                    abs(pixelRight - pixelCenter) +
@@ -169,17 +190,23 @@ Shader "PostProcessing/CombinedOutline"
     
         float4 FragMain(FragInput i) : SV_Target
         {
+
             float3 offset = float3((1.0 / _ScreenParams.x), (1.0 / _ScreenParams.y), 0.0);
             float3 sceneColor  = SAMPLE_TEXTURE2D(_CameraGBufferTexture0, sampler_CameraGBufferTexture0, i.texcoord);
+            
             float sceneDepth = SAMPLE_TEXTURE2D(_CameraDepthTexture, sampler_CameraDepthTexture, i.texcoord).r;
             float4 normalTexture = SAMPLE_TEXTURE2D(_CameraGBufferTexture2, sampler_CameraGBufferTexture2, i.texcoord);
             float3 sceneNormal = normalTexture.xyz * 2.0 - 1.0;
 
-            float3 toCameraDir = normalize(-i.cameraDir);
+            // Suggestive Contours test - doesn't quite work
+            /*float sobelSilhouette = sobelSampleSilhouette(i.texcoord,i.cameraDir,offset);
+            sobelSilhouette = step(0.3,sobelSilhouette);
+            return  float4(sobelSilhouette.rrr,1);*/
+            
             float edge = 0;
             if(sceneDepth > 0)
             {
-                float silhouette = dot(toCameraDir, normalize(sceneNormal));
+                float silhouette = sampleSilhouette(i.texcoord,i.cameraDir);
                 float3 sobelNormalVec = SobelSample(_CameraGBufferTexture2, sampler_CameraGBufferTexture2, i.texcoord.xy, offset);
                 float sobelNormal = length(sobelNormalVec);
                 if(silhouette <= _OutlineThickness && sobelNormal > _NormalSlope)
@@ -226,7 +253,8 @@ Shader "PostProcessing/CombinedOutline"
             float hatching = normalTexture.a;
 
             float shadow = CalculateShadow(i.texcoord);
-
+            
+            
             float shadowEdge = SobelSampleShadow(i.texcoord,offset);
             
             if(sceneDepth > 0)
@@ -238,7 +266,8 @@ Shader "PostProcessing/CombinedOutline"
                     sceneColor *= 0.5;
                 }
             }
-            
+
+            //return _CameraGBufferTexture3.Sample(sampler_CameraGBufferTexture3,i.texcoord);
             
             float3 color = lerp(sceneColor, _OutlineColor, edge);
             return float4(color,1);
