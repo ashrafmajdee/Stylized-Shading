@@ -208,14 +208,18 @@ Shader "PostProcessing/CombinedOutline"
             {
                 float silhouette = sampleSilhouette(i.texcoord,i.cameraDir);
                 float3 sobelNormalVec = SobelSample(_CameraGBufferTexture2, sampler_CameraGBufferTexture2, i.texcoord.xy, offset);
+                
                 float sobelNormal = length(sobelNormalVec);
-                if(silhouette <= _OutlineThickness && sobelNormal > _NormalSlope)
+                /*if(silhouette <= _OutlineThickness && sobelNormal > _NormalSlope)
                 {
                     edge = 1;
-                }
+                }*/
+                edge = step(_NormalSlope,sobelNormal);
                 float depthThreshold = _DepthThreshold;
                 float sobelDepth;
-                // sobelDepth = SobelSampleDepth(_CameraDepthTexture, sampler_CameraDepthTexture, i.texcoord.xy, offset).r;
+                //old sobel depth function
+                //sobelDepth = SobelSampleDepth(_CameraDepthTexture, sampler_CameraDepthTexture, i.texcoord.xy, offset).r;
+                //new function, lacks artifacts on flat surfaces
                 float doubleSobelDepth = DoubleSobelSampleDepth(_CameraDepthTexture, sampler_CameraDepthTexture, i.texcoord.xy, offset).r;
                 sobelDepth = doubleSobelDepth;
                 sobelDepth = step(depthThreshold,sobelDepth);
@@ -266,8 +270,8 @@ Shader "PostProcessing/CombinedOutline"
                     sceneColor *= 0.5;
                 }
             }
-
-            //return _CameraGBufferTexture3.Sample(sampler_CameraGBufferTexture3,i.texcoord);
+            
+            
             
             float3 color = lerp(sceneColor, _OutlineColor, edge);
             return float4(color,1);
