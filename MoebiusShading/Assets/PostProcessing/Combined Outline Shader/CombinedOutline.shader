@@ -117,9 +117,10 @@ Shader "PostProcessing/CombinedOutline"
             return shadow < _ShadowThreshold;
         }
 
-        float4 SobelSampleShadow(float2 uv, float3 offset)
+        float SobelSampleShadow(float2 uv, float3 offset, out float shadow)
         {
             float pixelCenter = CalculateShadow(uv);
+            shadow = pixelCenter;
             float pixelLeft   = CalculateShadow(uv - offset.xz);
             float pixelRight  = CalculateShadow(uv + offset.xz);
             float pixelUp     = CalculateShadow(uv - offset.zy);
@@ -210,15 +211,10 @@ Shader "PostProcessing/CombinedOutline"
                 float3 sobelNormalVec = SobelSample(_CameraGBufferTexture2, sampler_CameraGBufferTexture2, i.texcoord.xy, offset);
                 
                 float sobelNormal = length(sobelNormalVec);
-                /*if(silhouette <= _OutlineThickness && sobelNormal > _NormalSlope)
-                {
-                    edge = 1;
-                }*/
                 edge = step(_NormalSlope,sobelNormal);
                 float depthThreshold = _DepthThreshold;
                 float sobelDepth;
-                //old sobel depth function
-                //sobelDepth = SobelSampleDepth(_CameraDepthTexture, sampler_CameraDepthTexture, i.texcoord.xy, offset).r;
+                
                 //new function, lacks artifacts on flat surfaces
                 float doubleSobelDepth = DoubleSobelSampleDepth(_CameraDepthTexture, sampler_CameraDepthTexture, i.texcoord.xy, offset).r;
                 sobelDepth = doubleSobelDepth;
@@ -234,32 +230,14 @@ Shader "PostProcessing/CombinedOutline"
             
 
             // hatching and shadows
-             
-            // hatching is triplanar mapped
-            
-            /*
-            // get triplanar uv for hatching texture
-            float linearDepth = LinearEyeDepth(sceneDepth);
-            float3 worldPos = (i.cameraDir * linearDepth) + _WorldSpaceCameraPos;
-            TriplanarUV triUV = GetTriplanarUV(worldPos,sceneNormal);;
-            float hatchingX = SAMPLE_TEXTURE2D(_Hatching,sampler_Hatching,triUV.xPlane * _HatchingScale).r;
-            float hatchingY = SAMPLE_TEXTURE2D(_Hatching,sampler_Hatching,triUV.yPlane * _HatchingScale).g;
-            float hatchingZ = SAMPLE_TEXTURE2D(_Hatching,sampler_Hatching,triUV.zPlane * _HatchingScale).b;
-
-            //triplanar hatching
-            float3 triW = GetTriplanarWeights(sceneNormal);
-            float hatching = hatchingX * triW.x + hatchingY * triW.y + hatchingZ * triW.z;
-            hatching = step(0.5,hatching);
-            */
 
             //object space hatching
 
             float hatching = normalTexture.a;
-
-            float shadow = CalculateShadow(i.texcoord);
+            float shadow = 0;
             
             
-            float shadowEdge = SobelSampleShadow(i.texcoord,offset);
+            float shadowEdge = SobelSampleShadow(i.texcoord,offset, shadow);
             
             if(sceneDepth > 0)
             {
