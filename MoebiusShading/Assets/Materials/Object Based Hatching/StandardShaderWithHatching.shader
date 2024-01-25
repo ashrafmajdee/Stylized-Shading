@@ -245,7 +245,7 @@ Shader "Custom/StandardShaderWithHatching"
 
                 UnityGI gi = FragmentGI (s, occlusion, i.ambientOrLightmapUV, atten, dummyLight, sampleReflectionsInDeferred);
 
-                half3 emissiveColor = UNITY_BRDF_PBS (s.diffColor, s.specColor, s.oneMinusReflectivity, s.smoothness, s.normalWorld, -s.eyeVec, gi.light, gi.indirect).rgb;
+                half3 emissiveColor = UNITY_BRDF_PBS(s.diffColor, s.specColor, s.oneMinusReflectivity, s.smoothness, s.normalWorld, -s.eyeVec, gi.light, gi.indirect).rgb;
 
                 #ifdef _EMISSION
                     emissiveColor += Emission (i.tex.xy);
@@ -266,7 +266,7 @@ Shader "Custom/StandardShaderWithHatching"
                 UnityStandardDataToGbuffer(data, outGBuffer0, outGBuffer1, outGBuffer2);
                 float2 uv = float2((i.tex.x + _Hatching_ST.z) * _Hatching_ST.x,(i.tex.y + _Hatching_ST.w) * _Hatching_ST.y);
                 float hatching = tex2D(_Hatching, uv).r;
-                outGBuffer2.a = step(0.6,hatching);
+                //outGBuffer2.a = step(0.6,hatching);
 
                 // Emissive lighting buffer
                 outEmission = half4(emissiveColor, 1);

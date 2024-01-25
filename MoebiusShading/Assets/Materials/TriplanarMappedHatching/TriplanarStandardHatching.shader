@@ -302,7 +302,7 @@ Shader "Custom/TriplanarStandardHatching"
                 float3 triW = GetTriplanarWeights(s.normalWorld);
                 float hatching = hatchingX * triW.x + hatchingY * triW.y + hatchingZ * triW.z;
                 hatching = step(0.6,hatching);
-                outGBuffer2 = float4(data.normalWorld,hatching);
+                outGBuffer2.a = hatching;
                 
                 
 

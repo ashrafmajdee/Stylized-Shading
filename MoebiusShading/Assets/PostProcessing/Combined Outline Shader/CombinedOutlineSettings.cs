@@ -10,7 +10,7 @@ public class CombinedOutlineSettings : PostProcessEffectSettings
     public FloatParameter thickness = new FloatParameter { value = 0.2f };
     
     [Range(0.0f, 1.0f)]
-    public FloatParameter normalSlope = new FloatParameter() { value = 0f };
+    public FloatParameter normalThreshold = new FloatParameter() { value = 0f };
     
     [Range(0.0f, 1.0f)]
     public FloatParameter depthThreshold = new FloatParameter() { value = 1f };

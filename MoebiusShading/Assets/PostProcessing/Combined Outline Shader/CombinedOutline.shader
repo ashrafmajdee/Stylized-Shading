@@ -207,7 +207,6 @@ Shader "PostProcessing/CombinedOutline"
             float edge = 0;
             if(sceneDepth > 0)
             {
-                float silhouette = sampleSilhouette(i.texcoord,i.cameraDir);
                 float3 sobelNormalVec = SobelSample(_CameraGBufferTexture2, sampler_CameraGBufferTexture2, i.texcoord.xy, offset);
                 
                 float sobelNormal = length(sobelNormalVec);

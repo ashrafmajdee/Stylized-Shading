@@ -12,7 +12,7 @@ public class CombinedOutlineRenderer : PostProcessEffectRenderer<CombinedOutline
         sheet.properties.SetMatrix("_ViewProjectInverse", (Camera.current.projectionMatrix * Camera.current.worldToCameraMatrix).inverse);
         sheet.properties.SetFloat("_DepthThreshold", settings.depthThreshold);
         sheet.properties.SetFloat("_OutlineThickness", (settings.thickness));
-        sheet.properties.SetFloat("_NormalSlope", settings.normalSlope);
+        sheet.properties.SetFloat("_NormalSlope", settings.normalThreshold);
         sheet.properties.SetColor("_OutlineColor", settings.outlineColor);
         sheet.properties.SetColor("_Color", settings.color);
         

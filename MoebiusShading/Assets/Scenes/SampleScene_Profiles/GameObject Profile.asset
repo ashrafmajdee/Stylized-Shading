@@ -33,12 +33,12 @@ MonoBehaviour:
   thickness:
     overrideState: 1
     value: 1
-  normalSlope:
+  normalThreshold:
     overrideState: 1
-    value: 1
+    value: 0.667
   depthThreshold:
     overrideState: 1
-    value: 0.125
+    value: 0.238
   outlineColor:
     overrideState: 1
     value: {r: 0, g: 0, b: 0, a: 1}
@@ -47,4 +47,4 @@ MonoBehaviour:
     value: {r: 0.49749595, g: 0.4669811, b: 1, a: 1}
   shadowThreshold:
     overrideState: 1
-    value: 0.743
+    value: 0.68
